@@ -17,7 +17,7 @@ padding:20px;
 h1{color:#22c55e}
 
 textarea{
-width:320px;
+width:340px;
 height:180px;
 border-radius:8px;
 padding:8px;
@@ -54,6 +54,16 @@ border-radius:8px;
 width:200px;
 }
 
+.banItem{
+background:#1f2937;
+margin:4px;
+padding:6px;
+border-radius:6px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
 .bracket{
 margin-top:10px;
 }
@@ -70,9 +80,13 @@ margin-top:10px;
 
 Ilość drużyn:
 <select id="teams">
-<option>4</option><option>6</option><option>8</option>
-<option>10</option><option>12</option>
-<option>14</option><option>16</option>
+<option>4</option>
+<option>6</option>
+<option>8</option>
+<option>10</option>
+<option>12</option>
+<option>14</option>
+<option>16</option>
 </select><br>
 
 <button onclick="losujDruzyny()">Losuj drużyny</button>
@@ -192,24 +206,35 @@ function losujMecz(){
 let k=pickRandom(killers,3);
 let m=pickRandom(maps,3);
 
-let html=`
-<b>Killery:</b><br>
-${k.map(x=>`${x} <button onclick="this.parentElement.remove()">BAN</button>`).join("<br>")}
-<br><br>
-<b>Mapy:</b><br>
-${m.map(x=>`${x} <button onclick="this.parentElement.remove()">BAN</button>`).join("<br>")}
-`;
+let html="<b>Killery:</b><br>";
+
+k.forEach(killer=>{
+html+=`
+<div class="banItem">
+${killer}
+<button onclick="this.parentElement.remove()">BAN</button>
+</div>`;
+});
+
+html+="<br><b>Mapy:</b><br>";
+
+m.forEach(map=>{
+html+=`
+<div class="banItem">
+${map}
+<button onclick="this.parentElement.remove()">BAN</button>
+</div>`;
+});
 
 document.getElementById("matchOut").innerHTML=html;
 }
 
 function losujAddony(){
 
-let a1=addons[Math.floor(Math.random()*addons.length)];
-let a2=addons[Math.floor(Math.random()*addons.length)];
+let a=addons[Math.floor(Math.random()*addons.length)];
 
 document.getElementById("matchOut").innerHTML+=
-`<br><b>Dodatki:</b> ${a1} + ${a2}<br>`;
+`<br><b>Dodatki:</b> ${a}<br>`;
 }
 
 function coinflip(){
