@@ -1,0 +1,207 @@
+index.html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Mała Liga DavidaPyLy</title>
+<style>
+body {
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b1e3a;
+  color:#f2f2f2;
+  text-align:center;
+}
+
+.header {
+  background:#0b1e3a;
+  padding:30px 20px 10px;
+}
+
+.logo {
+  width:220px;
+}
+
+.title {
+  font-size:36px;
+  font-weight:bold;
+  color:#f5c542;
+  margin:10px 0 5px;
+}
+
+.subtitle {
+  color:#f2f2f2;
+  margin-bottom:20px;
+}
+
+.startBtn {
+  background:#c62828;
+  color:white;
+  border:none;
+  padding:14px 28px;
+  font-size:18px;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:15px;
+}
+
+.startBtn:hover { background:#e53935; }
+
+.panel {
+  display:none;
+  padding:20px;
+}
+
+.box {
+  border:2px solid #f5c542;
+  background:#09162b;
+  padding:15px;
+  margin:15px auto;
+  max-width:600px;
+  border-radius:10px;
+}
+
+button {
+  padding:8px 12px;
+  margin:5px;
+  cursor:pointer;
+  border:none;
+  border-radius:6px;
+  background:#c62828;
+  color:white;
+}
+
+button:hover { background:#e53935; }
+
+.pick {
+  display:inline-block;
+  border:1px solid #f5c542;
+  padding:6px 10px;
+  margin:5px;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+.banned { background:#c62828; }
+</style>
+</head>
+<body>
+
+<div class="header" id="startScreen">
+  <img src="logo.png" class="logo">
+  <div class="title">Mała Liga DavidaPyLy</div>
+  <div class="subtitle">Panel turniejowy Dead by Daylight</div>
+  <button class="startBtn" onclick="startLiga()">Wejdź do panelu</button>
+</div>
+
+<div class="panel" id="panel">
+
+  <div class="box">
+    <h2>Gracze (8)</h2>
+    <textarea id="players" rows="8" cols="40"></textarea><br>
+    <button onclick="drawTeams()">Losuj drużyny</button>
+    <p id="teams"></p>
+  </div>
+
+  <div class="box">
+    <h2>Killerzy</h2>
+    <button onclick="drawKillers()">Losuj 3</button>
+    <div id="killerPool"></div>
+    <p id="killerResult"></p>
+  </div>
+
+  <div class="box">
+    <h2>Mapy</h2>
+    <button onclick="drawMaps()">Losuj 3</button>
+    <div id="mapPool"></div>
+    <p id="mapResult"></p>
+  </div>
+
+</div>
+
+<script>
+function startLiga(){
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("panel").style.display="block";
+}
+
+const killers = [
+"Trapper","Wraith","Hillbilly","Nurse","Shape","Hag","Doctor","Huntress","Cannibal","Nightmare",
+"Pig","Clown","Spirit","Legion","Plague","Ghost Face","Demogorgon","Oni","Deathslinger",
+"Pyramid Head","Blight","Twins","Trickster","Nemesis","Cenobite","Artist","Onryo",
+"Dredge","Mastermind","Knight","Skull Merchant","Singularity","Xenomorph","Chucky"
+];
+
+const maps = [
+"MacMillan","Autohaven","Coldwind","Crotus Prenn","Haddonfield","Swamp","Yamaoka",
+"Ormond","Hawkins","RPD","Garden of Joy","Eyrie","Shattered Square","Toba Landing"
+];
+
+function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+
+function drawTeams(){
+ let p = document.getElementById("players").value.split("\n").filter(x=>x.trim());
+ if(p.length!==8){ alert("Wpisz 8 graczy"); return;}
+ p = shuffle(p);
+ let A = p.slice(0,4);
+ let B = p.slice(4);
+ document.getElementById("teams").innerHTML =
+ "<b>Team A:</b> "+A.join(", ")+"<br><b>Team B:</b> "+B.join(", ");
+}
+
+let killerDraw=[];
+let killerBans=0;
+
+function drawKillers(){
+ killerDraw = shuffle([...killers]).slice(0,3);
+ killerBans=0;
+ renderPool("killerPool",killerDraw,banKiller);
+ document.getElementById("killerResult").innerText="";
+}
+
+function banKiller(name,el){
+ if(el.classList.contains("banned")) return;
+ el.classList.add("banned");
+ killerBans++;
+ if(killerBans===2){
+  let left = killerDraw.filter(k=>!document.querySelector(`[data-name="${k}"]`).classList.contains("banned"));
+  document.getElementById("killerResult").innerHTML="<b>Killer:</b> "+left[0];
+ }
+}
+
+let mapDraw=[];
+let mapBans=0;
+
+function drawMaps(){
+ mapDraw = shuffle([...maps]).slice(0,3);
+ mapBans=0;
+ renderPool("mapPool",mapDraw,banMap);
+ document.getElementById("mapResult").innerText="";
+}
+
+function banMap(name,el){
+ if(el.classList.contains("banned")) return;
+ el.classList.add("banned");
+ mapBans++;
+ if(mapBans===2){
+  let left = mapDraw.filter(m=>!document.querySelector(`[data-name="${m}"]`).classList.contains("banned"));
+  document.getElementById("mapResult").innerHTML="<b>Mapa:</b> "+left[0];
+ }
+}
+
+function renderPool(id,list,fn){
+ let div=document.getElementById(id);
+ div.innerHTML="";
+ list.forEach(x=>{
+  let el=document.createElement("div");
+  el.className="pick";
+  el.innerText=x;
+  el.dataset.name=x;
+  el.onclick=()=>fn(x,el);
+  div.appendChild(el);
+ });
+}
+</script>
+
+</body>
+</html>
