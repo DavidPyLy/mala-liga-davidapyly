@@ -1,206 +1,222 @@
-index.html
 <!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <title>Mała Liga DavidaPyLy</title>
+
 <style>
-body {
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b1e3a;
-  color:#f2f2f2;
-  text-align:center;
+body{
+background:#0b0f1a;
+color:#e5e7eb;
+font-family:Arial;
+text-align:center;
+margin:0;
+padding:20px;
 }
 
-.header {
-  background:#0b1e3a;
-  padding:30px 20px 10px;
+h1{color:#22c55e}
+
+textarea{
+width:320px;
+height:180px;
+border-radius:8px;
+padding:8px;
 }
 
-.logo {
-  width:220px;
+select,button{
+padding:8px;
+margin:6px;
+border-radius:8px;
+border:none;
+font-size:14px;
 }
 
-.title {
-  font-size:36px;
-  font-weight:bold;
-  color:#f5c542;
-  margin:10px 0 5px;
+button{
+background:#22c55e;
+color:#04130a;
+cursor:pointer;
 }
 
-.subtitle {
-  color:#f2f2f2;
-  margin-bottom:20px;
+.section{
+margin:20px auto;
+max-width:900px;
+background:#111827;
+padding:15px;
+border-radius:12px;
 }
 
-.startBtn {
-  background:#c62828;
-  color:white;
-  border:none;
-  padding:14px 28px;
-  font-size:18px;
-  border-radius:8px;
-  cursor:pointer;
-  margin-top:15px;
+.team{
+display:inline-block;
+background:#1f2937;
+padding:10px;
+margin:6px;
+border-radius:8px;
+width:200px;
 }
 
-.startBtn:hover { background:#e53935; }
-
-.panel {
-  display:none;
-  padding:20px;
+.bracket{
+margin-top:10px;
 }
-
-.box {
-  border:2px solid #f5c542;
-  background:#09162b;
-  padding:15px;
-  margin:15px auto;
-  max-width:600px;
-  border-radius:10px;
-}
-
-button {
-  padding:8px 12px;
-  margin:5px;
-  cursor:pointer;
-  border:none;
-  border-radius:6px;
-  background:#c62828;
-  color:white;
-}
-
-button:hover { background:#e53935; }
-
-.pick {
-  display:inline-block;
-  border:1px solid #f5c542;
-  padding:6px 10px;
-  margin:5px;
-  cursor:pointer;
-  border-radius:6px;
-}
-
-.banned { background:#c62828; }
 </style>
 </head>
+
 <body>
 
-<div class="header" id="startScreen">
-  <img src="logo.png" class="logo">
-  <div class="title">Mała Liga DavidaPyLy</div>
-  <div class="subtitle">Panel turniejowy Dead by Daylight</div>
-  <button class="startBtn" onclick="startLiga()">Wejdź do panelu</button>
+<h1>Mała Liga DavidaPyLy</h1>
+
+<div class="section">
+<h3>Nicki zawodników (1 na linię)</h3>
+<textarea id="players"></textarea><br>
+
+Ilość drużyn:
+<select id="teams">
+<option>4</option><option>6</option><option>8</option>
+<option>10</option><option>12</option>
+<option>14</option><option>16</option>
+</select><br>
+
+<button onclick="losujDruzyny()">Losuj drużyny</button>
 </div>
 
-<div class="panel" id="panel">
+<div class="section">
+<h3>Drużyny</h3>
+<div id="teamsOut"></div>
+</div>
 
-  <div class="box">
-    <h2>Gracze (8)</h2>
-    <textarea id="players" rows="8" cols="40"></textarea><br>
-    <button onclick="drawTeams()">Losuj drużyny</button>
-    <p id="teams"></p>
-  </div>
+<div class="section">
+<h3>Bracket</h3>
+<div id="bracketOut"></div>
+</div>
 
-  <div class="box">
-    <h2>Killerzy</h2>
-    <button onclick="drawKillers()">Losuj 3</button>
-    <div id="killerPool"></div>
-    <p id="killerResult"></p>
-  </div>
+<div class="section">
+<h3>Losowanie meczu</h3>
+<button onclick="losujMecz()">Losuj killerów i mapy</button>
+<button onclick="losujAddony()">Losuj dodatki</button>
 
-  <div class="box">
-    <h2>Mapy</h2>
-    <button onclick="drawMaps()">Losuj 3</button>
-    <div id="mapPool"></div>
-    <p id="mapResult"></p>
-  </div>
+<div id="matchOut"></div>
+</div>
 
+<div class="section">
+<h3>Coinflip</h3>
+<button onclick="coinflip()">Rzuć monetą</button>
+<div id="coinOut"></div>
 </div>
 
 <script>
-function startLiga(){
-  document.getElementById("startScreen").style.display="none";
-  document.getElementById("panel").style.display="block";
-}
 
-const killers = [
-"Trapper","Wraith","Hillbilly","Nurse","Shape","Hag","Doctor","Huntress","Cannibal","Nightmare",
-"Pig","Clown","Spirit","Legion","Plague","Ghost Face","Demogorgon","Oni","Deathslinger",
-"Pyramid Head","Blight","Twins","Trickster","Nemesis","Cenobite","Artist","Onryo",
-"Dredge","Mastermind","Knight","Skull Merchant","Singularity","Xenomorph","Chucky"
+const killers=[
+"Trapper","Wraith","Hillbilly","Nurse","Shape","Hag","Doctor",
+"Huntress","Cannibal","Nightmare","Pig","Clown","Spirit",
+"Legion","Plague","Ghost Face","Demogorgon","Oni","Deathslinger",
+"Executioner","Blight","Twins","Trickster","Nemesis",
+"Cenobite","Artist","Onryo","Dredge","Mastermind",
+"Knight","Skull Merchant","Singularity","Xenomorph",
+"Chucky","Unknown"
 ];
 
-const maps = [
-"MacMillan","Autohaven","Coldwind","Crotus Prenn","Haddonfield","Swamp","Yamaoka",
-"Ormond","Hawkins","RPD","Garden of Joy","Eyrie","Shattered Square","Toba Landing"
+const maps=[
+"MacMillan Estate","Autohaven Wreckers","Coldwind Farm",
+"Crotus Prenn","Haddonfield","Backwater Swamp",
+"Lerys Memorial","Red Forest","Springwood",
+"Gideon Meat Plant","Yamaoka Estate","Ormond",
+"Hawkins","Grave of Glenvale","Midwich",
+"RPD","Eyrie of Crows","Garden of Joy",
+"Shattered Square","Toba Landing",
+"Nostromo Wreckage","Greenville Square"
 ];
 
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+const addons=["Brown","Yellow","Green","Purple","Iridescent"];
 
-function drawTeams(){
- let p = document.getElementById("players").value.split("\n").filter(x=>x.trim());
- if(p.length!==8){ alert("Wpisz 8 graczy"); return;}
- p = shuffle(p);
- let A = p.slice(0,4);
- let B = p.slice(4);
- document.getElementById("teams").innerHTML =
- "<b>Team A:</b> "+A.join(", ")+"<br><b>Team B:</b> "+B.join(", ");
+let teamsGlobal=[];
+
+function shuffle(a){
+for(let i=a.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[a[i],a[j]]=[a[j],a[i]];
+}
+return a;
 }
 
-let killerDraw=[];
-let killerBans=0;
+function losujDruzyny(){
 
-function drawKillers(){
- killerDraw = shuffle([...killers]).slice(0,3);
- killerBans=0;
- renderPool("killerPool",killerDraw,banKiller);
- document.getElementById("killerResult").innerText="";
+let players=document.getElementById("players").value
+.split("\n").filter(p=>p.trim()!="");
+
+let teams=parseInt(document.getElementById("teams").value);
+let perTeam=4;
+
+shuffle(players);
+
+teamsGlobal=[];
+let idx=0;
+
+for(let t=0;t<teams;t++){
+let team=[];
+for(let i=0;i<perTeam;i++){
+if(players[idx]) team.push(players[idx++]);
+}
+teamsGlobal.push(team);
 }
 
-function banKiller(name,el){
- if(el.classList.contains("banned")) return;
- el.classList.add("banned");
- killerBans++;
- if(killerBans===2){
-  let left = killerDraw.filter(k=>!document.querySelector(`[data-name="${k}"]`).classList.contains("banned"));
-  document.getElementById("killerResult").innerHTML="<b>Killer:</b> "+left[0];
- }
+let html="";
+teamsGlobal.forEach((team,i)=>{
+html+=`<div class="team"><b>Drużyna ${i+1}</b><br>${team.join("<br>")}</div>`;
+});
+
+document.getElementById("teamsOut").innerHTML=html;
+
+stworzBracket();
 }
 
-let mapDraw=[];
-let mapBans=0;
+function stworzBracket(){
 
-function drawMaps(){
- mapDraw = shuffle([...maps]).slice(0,3);
- mapBans=0;
- renderPool("mapPool",mapDraw,banMap);
- document.getElementById("mapResult").innerText="";
+let html="";
+
+for(let i=0;i<teamsGlobal.length;i+=2){
+if(teamsGlobal[i+1]){
+html+=`Mecz ${i/2+1}: Drużyna ${i+1} vs Drużyna ${i+2}<br>`;
+}
 }
 
-function banMap(name,el){
- if(el.classList.contains("banned")) return;
- el.classList.add("banned");
- mapBans++;
- if(mapBans===2){
-  let left = mapDraw.filter(m=>!document.querySelector(`[data-name="${m}"]`).classList.contains("banned"));
-  document.getElementById("mapResult").innerHTML="<b>Mapa:</b> "+left[0];
- }
+document.getElementById("bracketOut").innerHTML=html;
 }
 
-function renderPool(id,list,fn){
- let div=document.getElementById(id);
- div.innerHTML="";
- list.forEach(x=>{
-  let el=document.createElement("div");
-  el.className="pick";
-  el.innerText=x;
-  el.dataset.name=x;
-  el.onclick=()=>fn(x,el);
-  div.appendChild(el);
- });
+function pickRandom(arr,n){
+let copy=[...arr];
+shuffle(copy);
+return copy.slice(0,n);
 }
+
+function losujMecz(){
+
+let k=pickRandom(killers,3);
+let m=pickRandom(maps,3);
+
+let html=`
+<b>Killery:</b><br>
+${k.map(x=>`${x} <button onclick="this.parentElement.remove()">BAN</button>`).join("<br>")}
+<br><br>
+<b>Mapy:</b><br>
+${m.map(x=>`${x} <button onclick="this.parentElement.remove()">BAN</button>`).join("<br>")}
+`;
+
+document.getElementById("matchOut").innerHTML=html;
+}
+
+function losujAddony(){
+
+let a1=addons[Math.floor(Math.random()*addons.length)];
+let a2=addons[Math.floor(Math.random()*addons.length)];
+
+document.getElementById("matchOut").innerHTML+=
+`<br><b>Dodatki:</b> ${a1} + ${a2}<br>`;
+}
+
+function coinflip(){
+let res=Math.random()<0.5?"Survivor":"Killer";
+document.getElementById("coinOut").innerHTML=`Wynik: <b>${res}</b>`;
+}
+
 </script>
 
 </body>
