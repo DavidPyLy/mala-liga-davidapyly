@@ -16,8 +16,15 @@ padding:20px;
 
 h1{color:#22c55e}
 
+.columns{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
+}
+
 textarea{
-width:340px;
+width:300px;
 height:180px;
 border-radius:8px;
 padding:8px;
@@ -39,7 +46,7 @@ cursor:pointer;
 
 .section{
 margin:20px auto;
-max-width:900px;
+max-width:1000px;
 background:#111827;
 padding:15px;
 border-radius:12px;
@@ -63,10 +70,6 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 }
-
-.bracket{
-margin-top:10px;
-}
 </style>
 </head>
 
@@ -75,8 +78,22 @@ margin-top:10px;
 <h1>Mała Liga DavidaPyLy</h1>
 
 <div class="section">
-<h3>Nicki zawodników (1 na linię)</h3>
-<textarea id="players"></textarea><br>
+
+<div class="columns">
+
+<div>
+<h3>Wszyscy gracze</h3>
+<textarea id="players"></textarea>
+</div>
+
+<div>
+<h3>Muszą być osobno</h3>
+<textarea id="separate"></textarea>
+</div>
+
+</div>
+
+<br>
 
 Ilość drużyn:
 <select id="teams">
@@ -90,6 +107,7 @@ Ilość drużyn:
 </select><br>
 
 <button onclick="losujDruzyny()">Losuj drużyny</button>
+
 </div>
 
 <div class="section">
@@ -106,7 +124,6 @@ Ilość drużyn:
 <h3>Losowanie meczu</h3>
 <button onclick="losujMecz()">Losuj killerów i mapy</button>
 <button onclick="losujAddony()">Losuj dodatki</button>
-
 <div id="matchOut"></div>
 </div>
 
@@ -154,24 +171,37 @@ return a;
 function losujDruzyny(){
 
 let players=document.getElementById("players").value
-.split("\n").filter(p=>p.trim()!="");
+.split("\n").map(p=>p.trim()).filter(p=>p!="");
+
+let separate=document.getElementById("separate").value
+.split("\n").map(p=>p.trim()).filter(p=>p!="");
 
 let teams=parseInt(document.getElementById("teams").value);
 let perTeam=4;
 
+teamsGlobal=[];
+for(let i=0;i<teams;i++) teamsGlobal.push([]);
+
+// usuń separowanych z listy ogólnej
+players=players.filter(p=>!separate.includes(p));
+
+// wymuś osobne drużyny
+shuffle(separate);
+separate.forEach((p,i)=>{
+if(i<teams) teamsGlobal[i].push(p);
+});
+
+// losuj resztę
 shuffle(players);
 
-teamsGlobal=[];
 let idx=0;
-
 for(let t=0;t<teams;t++){
-let team=[];
-for(let i=0;i<perTeam;i++){
-if(players[idx]) team.push(players[idx++]);
+while(teamsGlobal[t].length<perTeam && players[idx]){
+teamsGlobal[t].push(players[idx++]);
 }
-teamsGlobal.push(team);
 }
 
+// render
 let html="";
 teamsGlobal.forEach((team,i)=>{
 html+=`<div class="team"><b>Drużyna ${i+1}</b><br>${team.join("<br>")}</div>`;
@@ -183,15 +213,12 @@ stworzBracket();
 }
 
 function stworzBracket(){
-
 let html="";
-
 for(let i=0;i<teamsGlobal.length;i+=2){
 if(teamsGlobal[i+1]){
 html+=`Mecz ${i/2+1}: Drużyna ${i+1} vs Drużyna ${i+2}<br>`;
 }
 }
-
 document.getElementById("bracketOut").innerHTML=html;
 }
 
@@ -230,11 +257,8 @@ document.getElementById("matchOut").innerHTML=html;
 }
 
 function losujAddony(){
-
 let a=addons[Math.floor(Math.random()*addons.length)];
-
-document.getElementById("matchOut").innerHTML+=
-`<br><b>Dodatki:</b> ${a}<br>`;
+document.getElementById("matchOut").innerHTML+=`<br><b>Dodatki:</b> ${a}<br>`;
 }
 
 function coinflip(){
